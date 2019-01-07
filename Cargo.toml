@@ -1,0 +1,8 @@
+[package]
+name = "rugl"
+version = "0.1.0"
+authors = ["Thomspoon <saturisk@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+compiletest_rs = "=0.3.17"
