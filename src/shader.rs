@@ -2,7 +2,7 @@
 The VertexShader class encapsulates any datatype that can be coerced to a string.
  */
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Shader {
     internal: String
 }

@@ -4,7 +4,7 @@ The Uniform class holds a vector of the inner types and offers many coersions of
 
 use crate::qualifier::Qualifier;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Uniform {
     name: String,
     data: Vec<Qualifier>

@@ -1,11 +1,9 @@
 #[macro_use]
 extern crate rugl;
 
+use rugl::prelude::*;
+
+// Default parameter test
 fn main() {
-    rugl!(
-        vertex: Shader,
-        fragment: Shader,
-        attributes: Vec<Attribute>,
-        uniforms: Vec<Uniform>
-    );
+    assert_eq!(rugl!(), Rugl{..Default::default()});
 }

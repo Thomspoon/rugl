@@ -41,10 +41,10 @@ use crate::uniform::Uniform;
 /// The internal Rugl struct holds the vertex and fragment shaders,
 /// and internal pointers to any attributes and uniforms used in 
 /// a design.
-#[derive(Debug)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Rugl {
-    pub vertex: Shader,
-    pub fragment: Shader,
+    pub vertex: Option<Shader>,
+    pub fragment: Option<Shader>,
     pub attributes: Vec<Attribute>,
     pub uniforms: Vec<Uniform>
 }

@@ -1,18 +1,34 @@
 /*!
-Macros used for various utilities
+Macros used for various utilities, this is the ugly file.
 !*/
+
+/// Simple macro giving named-arguments to the rugl type, including defaults
+#[macro_export]
+macro_rules! rugl {
+    (
+        $( $i:ident: { $($tokens:tt)* } ),*
+    ) => {
+        Rugl {
+            $($i: rugl_type!($i: $($tokens)*),)*
+            ..Default::default()
+        };
+    }
+}
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! determine_bracket_replace {
-    // Replace brackets with parenthesis and return as an array
-    ($([$($tokens:tt)*]),*) => {
-        [ $( ($($tokens)*) ),* ]
+macro_rules! rugl_type {
+    (vertex: $($tokens:tt)+) => {
+        Some(Shader::from($($tokens)*))
     };
-
-    // Not actually replacing brackets, just passing to an array
-    ($($tokens:tt)*) => {
-        [ $($tokens)* ]
+    (fragment: $($tokens:tt)+) => {
+        Some(Shader::from($($tokens)*))
+    };
+    (attributes: $($tokens:tt)+) => {
+        parse_ident!(@attribute $($tokens)*)
+    };
+    (uniforms: $($tokens:tt)+) => {
+        parse_ident!(@uniform $($tokens)*)
     }
 }
 
@@ -35,30 +51,15 @@ macro_rules! parse_ident {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! rugl_type {
-    (vertex: $($tokens:tt)+) => {
-        Shader::from($($tokens)*)
+macro_rules! determine_bracket_replace {
+    // Replace brackets with parenthesis and return as an array
+    ($([$($tokens:tt)*]),*) => {
+        [ $( ($($tokens)*) ),* ]
     };
-    (fragment: $($tokens:tt)+) => {
-        Shader::from($($tokens)*)
-    };
-    (attributes: $($tokens:tt)+) => {
-        parse_ident!(@attribute $($tokens)*)
-    };
-    (uniforms: $($tokens:tt)+) => {
-        parse_ident!(@uniform $($tokens)*)
-    }
-}
 
-/// Simple macro giving named-arguments to the rugl type
-#[macro_export]
-macro_rules! rugl {
-    (
-        $( $i:ident: { $($tokens:tt)* } ),*
-    ) => {
-        Rugl {
-            $($i: rugl_type!($i: $($tokens)*)),*
-        };
+    // Not actually replacing brackets, just passing to an array
+    ($($tokens:tt)*) => {
+        [ $($tokens)* ]
     }
 }
 

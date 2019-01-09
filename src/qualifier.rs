@@ -2,7 +2,7 @@
 The Qualifer class is a single data-type used by an Attribute or Uniform
  */
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Qualifier {
     Int(i32),
     Float(f32),
