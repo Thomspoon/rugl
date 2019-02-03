@@ -30,9 +30,13 @@ rugl_main! {
 
     uniforms: {
         color: [1, 0, 0, 1]
-    }
+    },
+
+    count: 3
 }
 */
+
+use std::borrow::Cow;
 
 use crate::shader::Shader;
 use crate::attribute::Attribute;
@@ -42,19 +46,32 @@ use crate::uniform::Uniform;
 /// and internal pointers to any attributes and uniforms used in 
 /// a design.
 #[derive(Debug, Default, PartialEq)]
-pub struct Rugl {
-    pub vertex: Option<Shader>,
-    pub fragment: Option<Shader>,
+pub struct Rugl<'a> {
+    pub vertex: Cow<'a, Shader<'a>>,
+    pub fragment: Cow<'a, Shader<'a>>,
     pub attributes: Vec<Attribute>,
-    pub uniforms: Vec<Uniform>
+    pub uniforms: Vec<Uniform>,
+    pub count: i32
 }
 
-impl Rugl {
+impl<'a> Rugl<'a> {
+    pub fn get_vertex_shader(&self) -> &Shader {
+        &self.vertex
+    }
+
+    pub fn get_fragment_shader(&self) -> &Shader {
+        &self.fragment
+    }
+
     pub fn get_attributes(&self) -> &Vec<Attribute> {
         &self.attributes
     }
     
     pub fn get_uniforms(&self) -> &Vec<Uniform> {
         &self.uniforms
+    }
+
+    pub fn get_count(&self) -> &i32 {
+        &self.count
     }
 }

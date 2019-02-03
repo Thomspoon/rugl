@@ -27,16 +27,19 @@ macro_rules! rugl {
 #[macro_export]
 macro_rules! rugl_type {
     (vertex: $($tokens:tt)+) => {
-        Some(Shader::new($($tokens)*))
+        Cow::Owned(Shader::new($($tokens)*))
     };
     (fragment: $($tokens:tt)+) => {
-        Some(Shader::new($($tokens)*))
+        Cow::Owned(Shader::new($($tokens)*))
     };
     (attributes: $($tokens:tt)+) => {
         parse_ident!(@attribute $($tokens)*)
     };
     (uniforms: $($tokens:tt)+) => {
         parse_ident!(@uniform $($tokens)*)
+    };
+    (count: $expr:expr) => {
+        $expr
     }
 }
 

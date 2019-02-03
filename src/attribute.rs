@@ -11,6 +11,10 @@ pub struct Attribute {
 }
 
 impl Attribute {
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+    
     pub fn get_qualifiers(&self) -> &Vec<Qualifier> {
         &self.data
     }

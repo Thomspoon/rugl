@@ -1,5 +1,6 @@
 /// Webassembly Context
 
+use std::borrow::Cow;
 use std::mem::size_of_val;
 use std::collections::HashMap;
 
@@ -15,7 +16,7 @@ use wasm_bindgen::JsCast;
 
 pub struct WebGlContext {
     context: WebGlRenderingContext,
-    canvas: web_sys::HtmlCanvasElement,
+    _canvas: web_sys::HtmlCanvasElement,
     program: Option<Program>,
     attributes: HashMap<String, Buffer>,
     uniforms: HashMap<String, Buffer>,
@@ -27,12 +28,12 @@ impl WebGlContext {
         id: T
     ) -> Result<Self, JsValue> {
         let document = web_sys::window().unwrap().document().unwrap();
-        let canvas = document
+        let _canvas = document
             .get_element_by_id(id.into())
             .ok_or_else(|| String::from("Unable to get Canvas element!"))?;
-        let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+        let _canvas: web_sys::HtmlCanvasElement = _canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
-        let context = canvas
+        let context = _canvas
             .get_context("webgl")?
             .unwrap()
             .dyn_into::<WebGlRenderingContext>()?;
@@ -43,7 +44,7 @@ impl WebGlContext {
 
         Ok(WebGlContext {
             context,
-            canvas,
+            _canvas,
             program: None,
             attributes: HashMap::new(),
             uniforms: HashMap::new(),
@@ -52,9 +53,9 @@ impl WebGlContext {
     }
 
     /// Compile shaders
-    pub fn compile_shader<T: Into<String>>(
+    pub fn compile_shader<'a, T: Into<Cow<'a, str>>>(
         &self, 
-        shader: ShaderType<T>
+        shader: ShaderType<'a, T>
     ) -> Result<Shader, String> {
         Shader::new(&self.context, shader)
     }
@@ -91,12 +92,12 @@ impl WebGlContext {
         Ok(buffer)
     }
 
-    pub fn create_buffer_with_data<Name: Into<String>, Type: FromSlice>(
+    pub fn create_buffer_with_data<'a, Name: Into<Cow<'a, str>>, Type: FromSlice>(
         &mut self, 
         primitive: Primitive, 
         name: Name, 
         data: Type,
-        count: u32
+        count: i32,
     ) -> Result<(), String> {
         let qualifer_name = name.into();
         let buffer = self.create_buffer()?;
@@ -116,7 +117,7 @@ impl WebGlContext {
                     log!("The qualifer did not exist");
                 } 
 
-                self.attributes.insert(qualifer_name, Buffer::new(
+                self.attributes.insert(qualifer_name.into_owned(), Buffer::new(
                     buffer,
                     data,
                     position,
@@ -139,7 +140,7 @@ impl WebGlContext {
                 //     log!("The qualifer did not exist");
                 // } 
 
-                self.attributes.insert(qualifer_name, Buffer::new(
+                self.attributes.insert(qualifer_name.into_owned(), Buffer::new(
                     buffer,
                     data,
                     0,
@@ -152,14 +153,14 @@ impl WebGlContext {
     }
 
     /// Bind an array to the context
-    pub fn bind_buffer_with_name<Name: Into<String>>(
+    pub fn bind_buffer_with_name<'a, Name: Into<Cow<'a, str>>>(
         &self, 
         primitive: Primitive, 
         name: Name
     ) -> Result<(), String> {
         match primitive {
             Primitive::Attribute => {
-                let attribute = self.attributes.get(&name.into());
+                let attribute = self.attributes.get(&name.into().into_owned());
                 match attribute {
                     Some(attribute) => { 
                         self.context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(attribute.get_buffer())); 
@@ -174,7 +175,7 @@ impl WebGlContext {
                 }
             },
             Primitive::Uniform => {
-                let uniform = self.uniforms.get(&name.into());
+                let uniform = self.uniforms.get(&name.into().into_owned());
                 match uniform {
                     Some(uniform) => { 
                         self.context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(uniform.get_buffer())); 
@@ -197,8 +198,8 @@ impl WebGlContext {
         self.context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
     }
 
-    pub fn enable_attribute<T: Into<String>>(&self, name: T) -> Result<(), String> {
-        let attribute = self.attributes.get(&name.into());
+    pub fn enable_attribute<'a, T: Into<Cow<'a, str>>>(&self, name: T) -> Result<(), String> {
+        let attribute = self.attributes.get(&name.into().into_owned());
         match attribute {
             Some(attribute) => { 
                 self.context.vertex_attrib_pointer_with_i32(
@@ -306,11 +307,11 @@ pub struct Buffer {
     buffer: WebGlBuffer,
     data: JsArray,
     position: i32,
-    count: u32
+    count: i32
 }
 
 impl Buffer {
-    pub fn new(buffer: WebGlBuffer, data: JsArray, position: i32, count: u32) -> Self {
+    pub fn new(buffer: WebGlBuffer, data: JsArray, position: i32, count: i32) -> Self {
         Self {
             buffer, 
             data,
@@ -331,7 +332,7 @@ impl Buffer {
         &self.position
     }
 
-    pub fn get_count(&self) -> &u32 {
+    pub fn get_count(&self) -> &i32 {
         &self.count
     }
 }
