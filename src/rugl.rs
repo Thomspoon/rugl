@@ -48,3 +48,13 @@ pub struct Rugl {
     pub attributes: Vec<Attribute>,
     pub uniforms: Vec<Uniform>
 }
+
+impl Rugl {
+    pub fn get_attributes(&self) -> &Vec<Attribute> {
+        &self.attributes
+    }
+    
+    pub fn get_uniforms(&self) -> &Vec<Uniform> {
+        &self.uniforms
+    }
+}

@@ -2,6 +2,14 @@
 Macros used for various utilities, this is the ugly file.
 !*/
 
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+#[macro_export]
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 /// Simple macro giving named-arguments to the rugl type, including defaults
 #[macro_export]
 macro_rules! rugl {
@@ -19,10 +27,10 @@ macro_rules! rugl {
 #[macro_export]
 macro_rules! rugl_type {
     (vertex: $($tokens:tt)+) => {
-        Some(Shader::from($($tokens)*))
+        Some(Shader::new($($tokens)*))
     };
     (fragment: $($tokens:tt)+) => {
-        Some(Shader::from($($tokens)*))
+        Some(Shader::new($($tokens)*))
     };
     (attributes: $($tokens:tt)+) => {
         parse_ident!(@attribute $($tokens)*)
@@ -63,7 +71,7 @@ macro_rules! determine_bracket_replace {
     }
 }
 
-
+// TODO: Remove once const generics gets implemented
 #[doc(hidden)]
 macro_rules! __impl_from_for_type {
     ($type:ty, $num:expr, $impl_type:ty, $impl_subtype:tt::$impl_subtype_variant:tt) => {

@@ -7,18 +7,10 @@ pub struct Shader {
     internal: String
 }
 
-impl From<String> for Shader {
-    fn from(internal: String) -> Self {
+impl Shader {
+    pub fn new<T: Into<String>>(internal: T) -> Self {
         Self {
-            internal
-        }
-    }
-}
-
-impl<'a> From<&'a str> for Shader {
-    fn from(internal: &'a str) -> Self {
-        Self {
-            internal: internal.to_owned()
+            internal: internal.into()
         }
     }
 }

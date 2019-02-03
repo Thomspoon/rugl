@@ -10,6 +10,12 @@ pub struct Attribute {
     data: Vec<Qualifier>
 }
 
+impl Attribute {
+    pub fn get_qualifiers(&self) -> &Vec<Qualifier> {
+        &self.data
+    }
+}
+
 // Array impls
 __impl_from_repeat!(i32, Attribute, AttributeInner::Float);
 __impl_from_repeat!(f32, Attribute, AttributeInner::Float);
