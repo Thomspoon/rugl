@@ -3,6 +3,7 @@
 use crate::webgl::Shader;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
+#[derive(Debug)]
 pub struct Program {
     internal: WebGlProgram
 }

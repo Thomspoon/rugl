@@ -14,6 +14,7 @@ use js_sys::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+#[derive(Debug)]
 pub struct WebGlContext {
     context: WebGlRenderingContext,
     _canvas: web_sys::HtmlCanvasElement,
@@ -232,6 +233,7 @@ impl WebGlContext {
     }
 }
 
+#[derive(Debug)]
 pub enum JsArray {
     Uint8Array(Uint8Array),
     Uint16Array(Uint16Array),
@@ -303,6 +305,7 @@ pub enum Primitive {
     Uniform
 }
 
+#[derive(Debug)]
 pub struct Buffer {
     buffer: WebGlBuffer,
     data: JsArray,

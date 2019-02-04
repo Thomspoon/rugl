@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 
 use web_sys::{WebGlShader, WebGlRenderingContext};
 
+#[derive(Debug)]
 pub enum ShaderType<'a, T: Into<Cow<'a, str>>> {
     Vertex(T, PhantomData<&'a T>),
     Fragment(T, PhantomData<&'a T>)
@@ -26,6 +27,7 @@ impl<'a, T: Into<Cow<'a, str>>> ShaderType<'a, T> {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Shader {
     internal: WebGlShader
 }
