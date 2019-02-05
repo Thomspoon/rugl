@@ -13,7 +13,7 @@ pub use crate::rugl::{Rugl, RuglInner};
 pub use crate::webgl::*;
 //}
 
-use crate::webgl::{WebGlContext};
+use crate::webgl::WebGlContext;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
@@ -39,7 +39,7 @@ pub fn start() -> Result<(), JsValue> {
         attributes: {
             position: [
                 [-0.7, -0.7, 0.0],
-                [ 0.7, -0.7, 0.0], 
+                [ 0.7, -0.7, 0.0],
                 [ 0.0,  0.7, 0.0]
             ],
         },
@@ -48,7 +48,9 @@ pub fn start() -> Result<(), JsValue> {
         },
 
         count: { 3 }
-    ).unwrap().step()?;
+    )
+    .unwrap()
+    .step()?;
 
     Ok(())
 }

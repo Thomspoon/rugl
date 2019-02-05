@@ -10,19 +10,23 @@ pub enum Qualifier {
     Vec3(i32, i32, i32),
     Vec2f(f32, f32),
     Vec3f(f32, f32, f32),
-    Vec4f(f32, f32, f32, f32)
+    Vec4f(f32, f32, f32, f32),
 }
 
 impl Qualifier {
     pub fn to_vec(&self) -> Vec<f32> {
         match self {
-            Qualifier::Int(inner)                    => vec![*inner as f32],
-            Qualifier::Float(inner)                  => vec![*inner],
-            Qualifier::Vec2(inner1, inner2)          => vec![*inner1 as f32, *inner2 as f32],
-            Qualifier::Vec3(inner1, inner2, inner3)  => vec![*inner1 as f32, *inner2 as f32, *inner3 as f32],
-            Qualifier::Vec2f(inner1, inner2)         => vec![*inner1, *inner2],
+            Qualifier::Int(inner) => vec![*inner as f32],
+            Qualifier::Float(inner) => vec![*inner],
+            Qualifier::Vec2(inner1, inner2) => vec![*inner1 as f32, *inner2 as f32],
+            Qualifier::Vec3(inner1, inner2, inner3) => {
+                vec![*inner1 as f32, *inner2 as f32, *inner3 as f32]
+            }
+            Qualifier::Vec2f(inner1, inner2) => vec![*inner1, *inner2],
             Qualifier::Vec3f(inner1, inner2, inner3) => vec![*inner1, *inner2, *inner3],
-            Qualifier::Vec4f(inner1, inner2, inner3, inner4) => vec![*inner1, *inner2, *inner3, *inner4]
+            Qualifier::Vec4f(inner1, inner2, inner3, inner4) => {
+                vec![*inner1, *inner2, *inner3, *inner4]
+            }
         }
     }
 }

@@ -1,27 +1,26 @@
 /// WebGl Program
-
 use crate::webgl::Shader;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
 #[derive(Debug, Clone)]
 pub struct Program {
-    internal: Option<WebGlProgram>
+    internal: Option<WebGlProgram>,
 }
 
 impl Program {
     pub fn empty() -> Self {
-        Program{ internal: None }
+        Program { internal: None }
     }
 
     pub fn new<'a, T: IntoIterator<Item = &'a Shader>>(
         context: &WebGlRenderingContext,
-        shaders: T
+        shaders: T,
     ) -> Result<Program, String> {
-
         // Create a webgl program
-        let program = context
-            .create_program()
-            .ok_or_else(|| { log!("Unable to create program"); String::from("Unable to create shader object") })?;
+        let program = context.create_program().ok_or_else(|| {
+            log!("Unable to create program");
+            String::from("Unable to create shader object")
+        })?;
 
         // Iterate through shaders attaching them to the program
         for shader in shaders {
@@ -37,11 +36,13 @@ impl Program {
             .as_bool()
             .unwrap_or(false)
         {
-            Ok(Program{ internal: Some(program) })
+            Ok(Program {
+                internal: Some(program),
+            })
         } else {
             Err(context
                 .get_program_info_log(&program)
-                .unwrap_or_else(|| { String::from("Unknown error creating program object") }))
+                .unwrap_or_else(|| String::from("Unknown error creating program object")))
         }
     }
 

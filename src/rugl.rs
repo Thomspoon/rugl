@@ -1,4 +1,4 @@
-/*! 
+/*!
 An ergonomic macro for creating themetic stateless WebGL applications!
 
 # Syntax
@@ -43,7 +43,7 @@ use crate::webgl::{Attribute, Uniform, WebGlContext};
 #[derive(Debug)]
 pub struct Rugl<'a> {
     pub inner: RuglInner<'a>,
-    pub context: WebGlContext
+    pub context: WebGlContext,
 }
 
 impl Rugl<'_> {
@@ -61,7 +61,7 @@ impl Rugl<'_> {
 }
 
 /// The internal Rugl struct holds the vertex and fragment shaders,
-/// and internal vectors to any attributes and uniforms used in 
+/// and internal vectors to any attributes and uniforms used in
 /// a design.
 #[derive(Debug)]
 pub struct RuglInner<'a> {
@@ -69,7 +69,7 @@ pub struct RuglInner<'a> {
     pub fragment: Cow<'a, str>,
     pub attributes: Vec<Attribute>,
     pub uniforms: Vec<Uniform>,
-    pub count: i32
+    pub count: i32,
 }
 
 impl<'a> RuglInner<'a> {
@@ -88,7 +88,7 @@ impl<'a> RuglInner<'a> {
     pub fn get_mut_attributes(&mut self) -> &mut Vec<Attribute> {
         &mut self.attributes
     }
-    
+
     pub fn get_uniforms(&self) -> &Vec<Uniform> {
         &self.uniforms
     }
@@ -111,7 +111,7 @@ macro_rules! rugl {
         #[inline]
         fn build_inner<'a>() -> Result<(RuglInner<'a>, WebGlContext), JsValue> {
             use std::borrow::Cow;
-            
+
             let mut context = WebGlContext::new("canvas")?;
 
             let mut inner = RuglInner {
@@ -144,7 +144,7 @@ macro_rules! rugl {
                 for layer in attribute.get_qualifiers() {
                     attr_data.extend_from_slice(&layer.to_vec());
                 }
-                
+
                 context.create_buffer_with_data(attribute.get_name(), &attr_data[..], count)?;
                 context.bind_buffer_with_name(attribute.get_name())?;
                 context.enable_attribute(attribute.get_name())?;
@@ -161,7 +161,7 @@ macro_rules! rugl {
 
         match build_inner() {
             Ok((inner, context)) => Ok(Rugl { inner, context }),
-            Err(err) => { 
+            Err(err) => {
                 //TODO: Proper error handling
                 log!("There was an error! {}", err.as_string().unwrap());
                 Err("There was a problem!!!".to_owned())

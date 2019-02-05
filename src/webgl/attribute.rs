@@ -7,7 +7,7 @@ use super::qualifier::Qualifier;
 #[derive(Debug, PartialEq)]
 pub struct Attribute {
     name: String,
-    data: Vec<Qualifier>
+    data: Vec<Qualifier>,
 }
 
 impl Attribute {

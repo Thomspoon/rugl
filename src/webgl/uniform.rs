@@ -11,14 +11,13 @@ pub enum UniformInner {
     Uniform3i(i32, i32, i32),
     Uniform3f(f32, f32, f32),
     Uniform4i(i32, i32, i32, i32),
-    Uniform4f(f32, f32, f32, f32)
+    Uniform4f(f32, f32, f32, f32),
 }
-
 
 #[derive(Debug, PartialEq)]
 pub struct Uniform {
     name: String,
-    data: UniformInner
+    data: UniformInner,
 }
 
 impl Uniform {
@@ -35,7 +34,7 @@ impl From<(String, UniformInner)> for Uniform {
     fn from(uniform: (String, UniformInner)) -> Self {
         Uniform {
             name: uniform.0,
-            data: UniformInner::from(uniform.1)
+            data: UniformInner::from(uniform.1),
         }
     }
 }

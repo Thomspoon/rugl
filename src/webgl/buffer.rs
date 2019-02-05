@@ -1,5 +1,4 @@
 /// WebGlBuffer wrapper
-
 use web_sys::{WebGlBuffer, WebGlUniformLocation};
 
 use crate::webgl::JsArray;
@@ -8,21 +7,21 @@ use crate::webgl::UniformInner;
 #[derive(Debug)]
 pub enum BufferInternal {
     Attribute(JsArray, u32),
-    Uniform(UniformInner, WebGlUniformLocation)
+    Uniform(UniformInner, WebGlUniformLocation),
 }
 
 impl BufferInternal {
     pub fn get_attribute(&self) -> (&JsArray, &u32) {
         match self {
             BufferInternal::Attribute(data, location) => (data, location),
-            BufferInternal::Uniform(_, _) => panic!("Not an attribute!")
+            BufferInternal::Uniform(_, _) => panic!("Not an attribute!"),
         }
     }
 
     pub fn get_uniform(&self) -> (&UniformInner, &WebGlUniformLocation) {
         match self {
             BufferInternal::Attribute(_, _) => panic!("Not a uniform!"),
-            BufferInternal::Uniform(data, location) => (data, location)
+            BufferInternal::Uniform(data, location) => (data, location),
         }
     }
 }
@@ -31,15 +30,15 @@ impl BufferInternal {
 pub struct Buffer {
     buffer: Option<WebGlBuffer>,
     data: BufferInternal,
-    count: i32
+    count: i32,
 }
 
 impl Buffer {
     pub fn new(buffer: Option<WebGlBuffer>, data: BufferInternal, count: i32) -> Self {
         Self {
-            buffer, 
+            buffer,
             data,
-            count
+            count,
         }
     }
 
@@ -55,4 +54,3 @@ impl Buffer {
         &self.count
     }
 }
-

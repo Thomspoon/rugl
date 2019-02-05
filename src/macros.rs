@@ -24,7 +24,7 @@ macro_rules! __impl_from_for_type_vec {
 
                 Self {
                     name: items.0,
-                    data: v
+                    data: v,
                 }
             }
         }
@@ -50,5 +50,5 @@ macro_rules! __impl_from_repeat_vec {
         __impl_from_for_type_vec!($type, 14, $impl_type, $impl_subtype::$impl_subtype_variant);
         __impl_from_for_type_vec!($type, 15, $impl_type, $impl_subtype::$impl_subtype_variant);
         __impl_from_for_type_vec!($type, 16, $impl_type, $impl_subtype::$impl_subtype_variant);
-    }
+    };
 }

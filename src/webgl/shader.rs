@@ -1,41 +1,40 @@
 /// WebGl Shader
-
 use std::borrow::Cow;
 use std::marker::PhantomData;
 
-use web_sys::{WebGlShader, WebGlRenderingContext};
+use web_sys::{WebGlRenderingContext, WebGlShader};
 
 #[derive(Debug)]
 pub enum ShaderType<'a, T: Into<Cow<'a, str>>> {
     Vertex(T, PhantomData<&'a T>),
-    Fragment(T, PhantomData<&'a T>)
+    Fragment(T, PhantomData<&'a T>),
 }
 
 impl<'a, T: Into<Cow<'a, str>>> ShaderType<'a, T> {
     pub fn into_inner(self) -> String {
         match self {
             ShaderType::Vertex(inner, _) => inner.into().into_owned(),
-            ShaderType::Fragment(inner, _) => inner.into().into_owned()
+            ShaderType::Fragment(inner, _) => inner.into().into_owned(),
         }
     }
 
     pub fn into_gl_type(&self) -> u32 {
         match self {
             ShaderType::Vertex(_, _) => WebGlRenderingContext::VERTEX_SHADER,
-            ShaderType::Fragment(_, _) => WebGlRenderingContext::FRAGMENT_SHADER
+            ShaderType::Fragment(_, _) => WebGlRenderingContext::FRAGMENT_SHADER,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Shader {
-    internal: WebGlShader
+    internal: WebGlShader,
 }
 
 impl Shader {
     pub fn new<'a, T: Into<Cow<'a, str>>>(
-        context: &WebGlRenderingContext, 
-        shader: ShaderType<'a, T>
+        context: &WebGlRenderingContext,
+        shader: ShaderType<'a, T>,
     ) -> Result<Shader, String> {
         let shader_context = context
             .create_shader(shader.into_gl_type())
@@ -49,7 +48,9 @@ impl Shader {
             .as_bool()
             .unwrap_or(false)
         {
-            Ok(Shader{ internal: shader_context })
+            Ok(Shader {
+                internal: shader_context,
+            })
         } else {
             Err(context
                 .get_shader_info_log(&shader_context)
