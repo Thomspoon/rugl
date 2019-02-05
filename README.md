@@ -42,21 +42,13 @@ rugl! {
 
 ## Quickstart
 
-Add wasm to your toolchain
-
-0. `rustup target add wasm32-unknown-unknown --toolchain nightly`
-
-Install wasm-bindgen-cli
-
-1. `cargo +nightly install wasm-bindgen-cli`
-
 Create a new library via cargo
 
-2. `cargo new --lib rugl_test && cd rugl_test`
+1. `cargo new --lib rugl_test && cd rugl_test`
 
-Pull necessary files
+Install necessary files and toolchain
 
-3. `curl https://raw.githubusercontent.com/Thomspoon/rugl/master/install_rugl.sh | sh`
+2. ` bash <(curl -s https://raw.githubusercontent.com/Thomspoon/rugl/master/install_rugl.sh)`
 
 Replace the code in your lib.rs with the following:
 
@@ -97,19 +89,48 @@ rugl!(
 );
 ```
 
+Add this to your Cargo.toml:
+
+```rust
+[package]
+//... Other things
+build = "build.rs"
+
+[dependencies]
+rugl = { git = "https://github.com/Thomspoon/rugl.git" }
+js-sys = "0.3.10"
+wasm-bindgen = "^0.2"
+
+[dependencies.web-sys]
+version = "0.3.10"
+features = [
+    "console",
+    "Document",
+    "Element",
+    "Window",
+    "WebGlBuffer",
+    "WebGlProgram",
+    "WebGlShader",
+    "WebGlRenderingContext",
+    "WebGlUniformLocation",
+    "WebGpuShaderStage",
+    "HtmlCanvasElement"
+]
+```
+
+3. Build your crate
+
+`cargo build`
+
 4. Install npm modules
 
 `npm install`
 
-5. Build your crate
-
-`cargo build`
-
-6. Serve your crate
+5. Serve your crate
 
 `npm run serve`
 
-7. Go to http://localhost:8080, and you should see the photo below:
+6. Go to http://localhost:8080, and you should see the photo below:
 
 
 
