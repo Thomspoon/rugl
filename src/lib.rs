@@ -1,6 +1,3 @@
-
-use std::borrow::Cow;
-
 use wasm_bindgen::prelude::*;
 
 mod rugl;
@@ -8,16 +5,11 @@ mod rugl;
 #[macro_use]
 mod macros;
 
-mod qualifier;
-mod attribute;
-mod uniform;
 pub mod webgl;
 
 //pub mod prelude {
 #[doc(no_inline)]
 pub use crate::rugl::{Rugl, RuglInner};
-pub use crate::attribute::Attribute;
-pub use crate::uniform::Uniform;
 pub use crate::webgl::*;
 //}
 
@@ -36,8 +28,11 @@ pub fn start() -> Result<(), JsValue> {
         },
         fragment: {
             "
+                precision mediump float;
+                uniform vec4 color;
+
                 void main() {
-                    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+                    gl_FragColor = color;
                 }
             "
         },
@@ -49,7 +44,7 @@ pub fn start() -> Result<(), JsValue> {
             ],
         },
         uniforms: {
-            color: [0.0, 0.1, 0.2, 0.3]
+            color: [0.0, 0.9, 0.5, 0.3]
         },
 
         count: { 3 }

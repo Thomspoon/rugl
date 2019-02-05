@@ -1,14 +1,22 @@
 /// Webassembly Context
 
+mod buffer;
+mod shader;
+mod program;
+mod qualifier;
+mod attribute;
+mod uniform;
+
 use std::borrow::Cow;
 use std::mem::size_of_val;
 use std::collections::HashMap;
 
-mod shader;
-mod program;
-
+pub use buffer::{Buffer, BufferInternal};
 pub use shader::{Shader, ShaderType};
 pub use program::Program;
+pub use uniform::{Uniform, UniformInner};
+pub use attribute::Attribute;
+
 use web_sys::{WebGlBuffer, WebGlRenderingContext};
 use js_sys::*;
 use wasm_bindgen::prelude::*;
@@ -18,7 +26,7 @@ use wasm_bindgen::JsCast;
 pub struct WebGlContext {
     context: WebGlRenderingContext,
     _canvas: web_sys::HtmlCanvasElement,
-    program: Option<Program>,
+    program: Program,
     attributes: HashMap<String, Buffer>,
     uniforms: HashMap<String, Buffer>,
     memory: JsValue
@@ -46,7 +54,7 @@ impl WebGlContext {
         Ok(WebGlContext {
             context,
             _canvas,
-            program: None,
+            program: Program::empty(),
             attributes: HashMap::new(),
             uniforms: HashMap::new(),
             memory
@@ -75,14 +83,14 @@ impl WebGlContext {
         shaders: Shaders
     ) -> Result<(), String> {
         let program = self.link_program(shaders)?;
-        let _ = std::mem::replace(&mut self.program, Some(program));
+        let _ = std::mem::replace(&mut self.program, program);
         Ok(())
     }
 
     /// Use internal program
     pub fn use_program(&self) -> Result<(), String> {
-        match &self.program {
-            Some(program) => { self.context.use_program(Some(&program.inner())); Ok(()) }
+        match &self.program.as_ref() {
+            Some(program) => { self.context.use_program(Some(&program)); Ok(()) }
             None => Err(String::from("Program has not been setup yet!"))
         }
     }
@@ -94,8 +102,7 @@ impl WebGlContext {
     }
 
     pub fn create_buffer_with_data<'a, Name: Into<Cow<'a, str>>, Type: FromSlice>(
-        &mut self, 
-        primitive: Primitive, 
+        &mut self,
         name: Name, 
         data: Type,
         count: i32,
@@ -103,93 +110,45 @@ impl WebGlContext {
         let qualifer_name = name.into();
         let buffer = self.create_buffer()?;
         let data = FromSlice::from_slice(&mut self.memory, data);
+        let program = self.program.as_ref().unwrap();
+        let location = self.context.get_attrib_location(
+            &program, 
+            &qualifer_name
+        );
 
-        match primitive {
-            Primitive::Attribute => {
-                let position = self.context.get_attrib_location(
-                    self.program
-                        .as_ref()
-                        .unwrap()
-                        .inner(), 
-                    &qualifer_name
-                );
+        if location < 0 {
+            return Err(String::from(format!("Attribute: {} does not exist!", qualifer_name)));
+        } 
 
-                if position < 0 {
-                    log!("The qualifer did not exist");
-                } 
-
-                self.attributes.insert(qualifer_name.into_owned(), Buffer::new(
-                    buffer,
-                    data,
-                    position,
-                    count
-                ))
-            },
-            Primitive::Uniform => {
-                // TODO: Uniform locations have a struct, not an i32, fix the buffer
-                //       to either account for both, or split up the buffers
-
-                // let position = self.context.get_uniform_location(
-                //     self.program
-                //         .as_ref()
-                //         .unwrap()
-                //         .inner(), 
-                //     &qualifer_name
-                // ).unwrap().into();
-
-                // if position < 0 {
-                //     log!("The qualifer did not exist");
-                // } 
-
-                self.attributes.insert(qualifer_name.into_owned(), Buffer::new(
-                    buffer,
-                    data,
-                    0,
-                    count
-                ))
-            }
-        };
+        self.attributes.insert(qualifer_name.into_owned(), Buffer::new(
+            Some(buffer),
+            BufferInternal::Attribute(data, location as _),
+            count
+        ));
 
         Ok(())
     }
 
     /// Bind an array to the context
     pub fn bind_buffer_with_name<'a, Name: Into<Cow<'a, str>>>(
-        &self, 
-        primitive: Primitive, 
+        &self,
         name: Name
     ) -> Result<(), String> {
-        match primitive {
-            Primitive::Attribute => {
-                let attribute = self.attributes.get(&name.into().into_owned());
-                match attribute {
-                    Some(attribute) => { 
-                        self.context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(attribute.get_buffer())); 
-                        self.context.buffer_data_with_array_buffer_view(
-                            WebGlRenderingContext::ARRAY_BUFFER,
-                            attribute.get_data().to_object(),
-                            WebGlRenderingContext::STATIC_DRAW,
-                        );
-                        Ok(()) 
-                    }
-                    None => Err(String::from("Attribute does not exist!"))
-                }
-            },
-            Primitive::Uniform => {
-                let uniform = self.uniforms.get(&name.into().into_owned());
-                match uniform {
-                    Some(uniform) => { 
-                        self.context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(uniform.get_buffer())); 
-                        self.context.buffer_data_with_array_buffer_view(
-                            WebGlRenderingContext::ARRAY_BUFFER,
-                            uniform.get_data().to_object(),
-                            WebGlRenderingContext::STATIC_DRAW,
-                        );
-                        Ok(()) 
-                    }
-                    None => Err(String::from("Uniform does not exist!"))
-                }
+        let attribute = self.attributes.get(&name.into().into_owned());
+        match attribute {
+            Some(attribute) => { 
+                self.context.bind_buffer(WebGlRenderingContext::ARRAY_BUFFER, Some(&attribute.get_buffer().unwrap())); 
+
+                let (data, _) = attribute.get_data().get_attribute();
+
+                self.context.buffer_data_with_array_buffer_view(
+                    WebGlRenderingContext::ARRAY_BUFFER,
+                    data.to_object(),
+                    WebGlRenderingContext::STATIC_DRAW,
+                );
+                Ok(()) 
             }
+            None => Err(String::from("Attribute does not exist!"))
         }
     }
 
@@ -203,8 +162,10 @@ impl WebGlContext {
         let attribute = self.attributes.get(&name.into().into_owned());
         match attribute {
             Some(attribute) => { 
+                let (_, location) = attribute.get_data().get_attribute();
+
                 self.context.vertex_attrib_pointer_with_i32(
-                    *attribute.get_position() as _, 
+                    *location, 
                     *attribute.get_count() as _, 
                     WebGlRenderingContext::FLOAT, 
                     false, 0, 0
@@ -213,6 +174,49 @@ impl WebGlContext {
                 Ok(())
             }
             None => Err(String::from("Attribute does not exist!"))
+        }
+    }
+
+    pub fn create_uniform<'a, T: Copy + Into<Cow<'a, str>>>(
+        &mut self, 
+        name: T, 
+        uniform: UniformInner
+    ) -> Result<(), String> {
+        let location = self.context.get_uniform_location(&self.program.as_ref().unwrap(), name.into().as_ref()); 
+
+        if !location.is_some() {
+            return Err(String::from("Uniform location not found!"));
+        }
+
+        self.uniforms.insert(name.into().as_ref().to_string(), Buffer::new(
+            None,
+            BufferInternal::Uniform(uniform, location.unwrap()),
+            0
+        ));
+
+        Ok(())
+    }
+
+    pub fn bind_uniform<'a, T: Into<Cow<'a, str>>>(&self, name: T) -> Result<(), String> {
+        let uniform = self.uniforms.get(&name.into().into_owned());
+        match uniform {
+            Some(uniform) => { 
+                let (data, location) = uniform.get_data().get_uniform();
+
+                match data {
+                    UniformInner::Uniform1i(val) => self.context.uniform1i(Some(location), *val),
+                    UniformInner::Uniform1f(val) => self.context.uniform1f(Some(location), *val),
+                    UniformInner::Uniform2i(val1, val2) => self.context.uniform2i(Some(location), *val1, *val2),
+                    UniformInner::Uniform2f(val1, val2) => self.context.uniform2f(Some(location), *val1, *val2),
+                    UniformInner::Uniform3i(val1, val2, val3) => self.context.uniform3i(Some(location), *val1, *val2, *val3),
+                    UniformInner::Uniform3f(val1, val2, val3) => self.context.uniform3f(Some(location), *val1, *val2, *val3),
+                    UniformInner::Uniform4i(val1, val2, val3, val4) => self.context.uniform4i(Some(location), *val1, *val2, *val3, *val4),
+                    UniformInner::Uniform4f(val1, val2, val3, val4) => self.context.uniform4f(Some(location), *val1, *val2, *val3, *val4),
+                }
+
+                Ok(())
+            }
+            None => Err(String::from("Uniform does not exist!"))
         }
     }
 
@@ -299,43 +303,3 @@ from_slice!(&[i16], Int16Array);
 from_slice!(&[i32], Int32Array);
 from_slice!(&[f32], Float32Array);
 from_slice!(&[f64], Float64Array);
-
-pub enum Primitive {
-    Attribute,
-    Uniform
-}
-
-#[derive(Debug)]
-pub struct Buffer {
-    buffer: WebGlBuffer,
-    data: JsArray,
-    position: i32,
-    count: i32
-}
-
-impl Buffer {
-    pub fn new(buffer: WebGlBuffer, data: JsArray, position: i32, count: i32) -> Self {
-        Self {
-            buffer, 
-            data,
-            position,
-            count
-        }
-    }
-
-    pub fn get_buffer(&self) -> &WebGlBuffer {
-        &self.buffer
-    }
-
-    pub fn get_data(&self) -> &JsArray {
-        &self.data
-    }
-
-    pub fn get_position(&self) -> &i32 {
-        &self.position
-    }
-
-    pub fn get_count(&self) -> &i32 {
-        &self.count
-    }
-}

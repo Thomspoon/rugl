@@ -3,12 +3,16 @@
 use crate::webgl::Shader;
 use web_sys::{WebGlProgram, WebGlRenderingContext};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Program {
-    internal: WebGlProgram
+    internal: Option<WebGlProgram>
 }
 
 impl Program {
+    pub fn empty() -> Self {
+        Program{ internal: None }
+    }
+
     pub fn new<'a, T: IntoIterator<Item = &'a Shader>>(
         context: &WebGlRenderingContext,
         shaders: T
@@ -33,7 +37,7 @@ impl Program {
             .as_bool()
             .unwrap_or(false)
         {
-            Ok(Program{ internal: program })
+            Ok(Program{ internal: Some(program) })
         } else {
             Err(context
                 .get_program_info_log(&program)
@@ -41,7 +45,7 @@ impl Program {
         }
     }
 
-    pub fn inner(&self) -> &WebGlProgram {
-        &self.internal
+    pub fn as_ref(&self) -> Option<&WebGlProgram> {
+        self.internal.as_ref()
     }
 }

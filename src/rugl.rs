@@ -38,11 +38,7 @@ rugl_main! {
 
 use std::borrow::Cow;
 
-use wasm_bindgen::prelude::*;
-
-use crate::webgl::{WebGlContext};
-use crate::attribute::Attribute;
-use crate::uniform::Uniform;
+use crate::webgl::{Attribute, Uniform, WebGlContext};
 
 #[derive(Debug)]
 pub struct Rugl<'a> {
@@ -114,6 +110,8 @@ macro_rules! rugl {
     ) => {{
         #[inline]
         fn build_inner<'a>() -> Result<(RuglInner<'a>, WebGlContext), JsValue> {
+            use std::borrow::Cow;
+            
             let mut context = WebGlContext::new("canvas")?;
 
             let mut inner = RuglInner {
@@ -147,10 +145,16 @@ macro_rules! rugl {
                     attr_data.extend_from_slice(&layer.to_vec());
                 }
                 
-                context.create_buffer_with_data(Primitive::Attribute, attribute.get_name(), &attr_data[..], count)?;
-                context.bind_buffer_with_name(Primitive::Attribute, attribute.get_name())?;
+                context.create_buffer_with_data(attribute.get_name(), &attr_data[..], count)?;
+                context.bind_buffer_with_name(attribute.get_name())?;
                 context.enable_attribute(attribute.get_name())?;
             }
+
+            for uniform in inner.get_mut_uniforms() {
+                context.create_uniform(uniform.get_name(), uniform.inner())?;
+                context.bind_uniform(uniform.get_name())?;
+            }
+
 
             Ok((inner, context))
         }
@@ -158,6 +162,7 @@ macro_rules! rugl {
         match build_inner() {
             Ok((inner, context)) => Ok(Rugl { inner, context }),
             Err(err) => { 
+                //TODO: Proper error handling
                 log!("There was an error! {}", err.as_string().unwrap());
                 Err("There was a problem!!!".to_owned())
             }
@@ -198,7 +203,7 @@ macro_rules! parse_ident {
     (@uniform
         $($id:ident: [$($tokens:tt)*]),+ $(,)*
     ) => {
-        vec![$( Uniform::from((stringify!($id).to_owned(), determine_bracket_replace!($($tokens)*)) )),*]
+        vec![$( Uniform::from((stringify!($id).to_owned(), UniformInner::from(determine_bracket_replace!($($tokens)*))) )),*]
     };
 }
 
