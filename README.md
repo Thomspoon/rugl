@@ -56,7 +56,7 @@ Create a new library via cargo
 
 Pull necessary files
 
-3. `curl https://sh.rustup.rs -sSf | sh`
+3. `curl https://raw.githubusercontent.com/Thomspoon/rugl/master/install_rugl.sh | sh`
 
 Replace the code in your lib.rs with the following:
 
