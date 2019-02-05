@@ -1,4 +1,4 @@
-import('./pkg/rugl')
+import('./pkg/rugl_test')
     .catch(console.error)
 
 var can = document.getElementById("canvas");

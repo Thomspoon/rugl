@@ -11,7 +11,7 @@ fn main() {
 
     let test = Command::new("wasm-bindgen")
         .args(&[
-            "target/wasm32-unknown-unknown/debug/rugl.wasm",
+            "target/wasm32-unknown-unknown/debug/rugl_test.wasm",
             "--out-dir",
             dest_path.to_str().unwrap(),
         ])

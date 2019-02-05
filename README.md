@@ -96,6 +96,9 @@ Add this to your Cargo.toml:
 //... Other things
 build = "build.rs"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
 rugl = { git = "https://github.com/Thomspoon/rugl.git" }
 js-sys = "0.3.10"
@@ -120,7 +123,7 @@ features = [
 
 3. Build your crate
 
-`cargo build`
+`cargo +nightly build --target wasm32-unknown-unknown`
 
 4. Install npm modules
 
@@ -132,7 +135,7 @@ features = [
 
 6. Go to http://localhost:8080, and you should see the photo below:
 
-
+<img alt="" src="screenshot.png" height="600" width = "600" />
 
 ## TODO
 - [ ] Run Clippy
