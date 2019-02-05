@@ -6,7 +6,7 @@ mod webgl;
 #[macro_export]
 macro_rules! rugl_main {
     ($($tt:tt)*) => {
-        use wasm_bindgen::prelude::*;
+        use wasm::bindgen::*;
 
         #[wasm_bindgen(start)]
         pub fn start() -> Result<(), JsValue> {

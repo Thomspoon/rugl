@@ -48,7 +48,7 @@ pub struct Rugl<'a> {
 
 impl Rugl<'_> {
     pub fn step(&mut self) -> Result<(), String> {
-        self.context.clear_with_color([0.2, 0.3, 0.1, 1.0]);
+        self.context.clear_with_color([1.0, 1.0, 1.0, 1.0]);
 
         for attribute in self.inner.get_attributes() {
             self.context.enable_attribute(attribute.get_name())?;
