@@ -1,56 +1,31 @@
-use wasm_bindgen::prelude::*;
-
 mod rugl;
-
 #[macro_use]
 mod macros;
+mod webgl;
 
-pub mod webgl;
+#[macro_export]
+macro_rules! rugl_main {
+    ($($tt:tt)*) => {
+        use wasm_bindgen::prelude::*;
 
-//pub mod prelude {
-#[doc(no_inline)]
-pub use crate::rugl::{Rugl, RuglInner};
-pub use crate::webgl::*;
-//}
+        #[wasm_bindgen(start)]
+        pub fn start() -> Result<(), JsValue> {
+            let _ = rugl_inner!($($tt)*)
+                .unwrap()
+                .step()?;
 
-use crate::webgl::WebGlContext;
+            Ok(())
+        }
 
-#[wasm_bindgen(start)]
-pub fn start() -> Result<(), JsValue> {
-    let _ = rugl!(
-        vertex: {
-            "
-                attribute vec4 position;
-                void main() {
-                    gl_Position = position;
-                }
-            "
-        },
-        fragment: {
-            "
-                precision mediump float;
-                uniform vec4 color;
+    }
+}
 
-                void main() {
-                    gl_FragColor = color;
-                }
-            "
-        },
-        attributes: {
-            position: [
-                [-0.7, -0.7, 0.0],
-                [ 0.7, -0.7, 0.0],
-                [ 0.0,  0.7, 0.0]
-            ],
-        },
-        uniforms: {
-            color: [0.0, 0.9, 0.5, 0.3]
-        },
+#[macro_use]
+pub mod prelude {
+    pub use super::*;
 
-        count: { 3 }
-    )
-    .unwrap()
-    .step()?;
-
-    Ok(())
+    pub use crate::rugl::{Rugl, RuglInner};
+    pub use crate::webgl::*;
+    pub use wasm_bindgen::prelude::*;
+    pub use rugl_main as rugl;
 }

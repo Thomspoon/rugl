@@ -104,7 +104,7 @@ impl<'a> RuglInner<'a> {
 
 /// A macro that enables giving named-arguments to the rugl struct, and sets up the WebGlContext
 #[macro_export]
-macro_rules! rugl {
+macro_rules! rugl_inner {
     (
         $( $i:ident: { $($tokens:tt)* } ),*
     ) => {{
