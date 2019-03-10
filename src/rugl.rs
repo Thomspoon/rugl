@@ -47,27 +47,49 @@ pub struct Rugl<'a> {
 
 impl Rugl<'_> {
     pub fn step(&mut self) -> Result<(), String> {
-        self.context.clear_with_color([1.0, 1.0, 1.0, 1.0]);
+        self.context.clear_with_color(self.inner.clear);
 
         for attribute in self.inner.get_attributes() {
             self.context.enable_attribute(attribute.get_name())?;
         }
 
+        let tick = self.inner.tick;
+        for uniform in self.inner.get_mut_uniforms() {
+            self.context.update_uniform(uniform.get_name(), tick)?;
+        }
+
         self.context.draw_triangles(*self.inner.get_count());
 
+        self.inner.tick += 0.001;
+
         Ok(())
+    }
+    pub fn is_dynamic(&self) -> bool {
+        self.inner.is_dynamic()
     }
 }
 
 /// The internal Rugl struct holds the vertex and fragment shaders,
 /// and internal vectors to any attributes and uniforms used in
 /// a design.
+#[derive(Default)]
 pub struct RuglInner<'a> {
+    /// Clear color
+    pub clear: [f64; 4],
+    /// Application vertex shader
     pub vertex: Cow<'a, str>,
+    /// Application fragment shader
     pub fragment: Cow<'a, str>,
+    /// Collection of attributes in the application
     pub attributes: Vec<Attribute>,
+    /// Collection of uniforms in the application
     pub uniforms: Vec<Uniform>,
+    /// Number of primitives to draw
     pub count: i32,
+    /// Determine if we need to dynamically update the screen
+    pub dynamic: bool, 
+    /// Internal time tick
+    pub tick: f64,
 }
 
 impl<'a> RuglInner<'a> {
@@ -98,6 +120,10 @@ impl<'a> RuglInner<'a> {
     pub fn get_count(&self) -> &i32 {
         &self.count
     }
+
+    pub fn is_dynamic(&self) -> bool {
+        self.dynamic
+    }
 }
 
 /// A macro that enables giving named-arguments to the rugl struct, and sets up the WebGlContext
@@ -114,6 +140,7 @@ macro_rules! rugl_inner {
 
             let mut inner = RuglInner {
                 $($i: rugl_type!($i: $($tokens)*),)*
+                ..Default::default()
             };
 
             let vertex = context.compile_shader(
@@ -148,11 +175,16 @@ macro_rules! rugl_inner {
                 context.enable_attribute(attribute.get_name())?;
             }
 
+            let mut dynamic = false;
             for uniform in inner.get_mut_uniforms() {
+                if uniform.get_data().is_dynamic() {
+                    dynamic = true;
+                }
                 context.create_uniform(uniform.get_name(), uniform.get_data())?;
                 context.bind_uniform(uniform.get_name())?;
             }
 
+            inner.dynamic = dynamic;
 
             Ok((inner, context))
         }
@@ -213,12 +245,28 @@ macro_rules! parse_ident {
         parse_ident!(@uniform_inner $expr, $id: [$($tokens),*]);
         parse_ident!(@uniform_inner $expr, $($extra)* );
     };
-    // Uniform Function
+    // Uniform Function without type
     (@uniform_inner $expr:expr, $id:ident: |$($fn_head:ident),*| $fn_body:expr ) => {
         $expr.push(Uniform::from((stringify!($id).to_owned(), UniformInner::from(Rc::new(|$($fn_head),*| $fn_body) as Rc<Fn(f64)->_>))));
     };
     (@uniform_inner $expr:expr, $id:ident: |$($fn_head:ident),*| $fn_body:expr, $($extra:tt)* ) => {
         parse_ident!(@uniform_inner $expr, $id: |$($fn_head),*| $fn_body );
+        parse_ident!(@uniform_inner $expr, $($extra)* );
+    };
+    // Uniform Function with type
+    (@uniform_inner $expr:expr, $id:ident: |$($fn_head:ident: $fn_type:ty),*| $fn_body:expr ) => {
+        $expr.push(Uniform::from((stringify!($id).to_owned(), UniformInner::from(Rc::new(|$($fn_head: $fn_type),*| $fn_body) as Rc<Fn(f64)->_>))));
+    };
+    (@uniform_inner $expr:expr, $id:ident: |$($fn_head:ident: $fn_type:ty),*| $fn_body:expr, $($extra:tt)* ) => {        
+        parse_ident!(@uniform_inner $expr, $id: |$($fn_head: $fn_type),*| $fn_body );
+        parse_ident!(@uniform_inner $expr, $($extra)* );
+    };
+    // Uniform Direct Expression
+    (@uniform_inner $expr:expr, $id:ident: $data:expr ) => {
+        $expr.push(Uniform::from((stringify!($id).to_owned(), UniformInner::from($data))));
+    };
+    (@uniform_inner $expr:expr, $id:ident: $data:expr, $($extra:tt)* ) => {
+        parse_ident!(@uniform_inner $expr, $id: $data );
         parse_ident!(@uniform_inner $expr, $($extra)* );
     };
     // Empty base for trailing commas

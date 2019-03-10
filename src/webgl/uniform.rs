@@ -16,6 +16,21 @@ pub enum UniformInner {
     Uniform4f(f64, f64, f64, f64, Option<Rc<Fn(f64) -> [f64; 4]>>),
 }
 
+impl UniformInner {
+    pub fn is_dynamic(&self) -> bool {
+        match self {
+            UniformInner::Uniform1i(_, func) => func.is_some(),
+            UniformInner::Uniform1f(_, func) => func.is_some(),
+            UniformInner::Uniform2i(_, _, func) => func.is_some(),
+            UniformInner::Uniform2f(_, _, func) => func.is_some(),
+            UniformInner::Uniform3i(_, _, _, func) => func.is_some(),
+            UniformInner::Uniform3f(_, _, _, func) => func.is_some(),
+            UniformInner::Uniform4i(_, _, _, _, func) => func.is_some(),
+            UniformInner::Uniform4f(_, _, _, _, func) => func.is_some(),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Uniform {
     name: String,

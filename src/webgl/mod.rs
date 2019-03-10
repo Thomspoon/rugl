@@ -33,16 +33,18 @@ pub struct WebGlContext {
 impl WebGlContext {
     pub fn new<'a, T: Into<&'a str>>(id: T) -> Result<Self, JsValue> {
         let document = web_sys::window().unwrap().document().unwrap();
-        let _canvas = document
+        let canvas = document
             .get_element_by_id(id.into())
             .ok_or_else(|| String::from("Unable to get Canvas element!"))?;
-        let _canvas: web_sys::HtmlCanvasElement =
-            _canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
+        let canvas: web_sys::HtmlCanvasElement =
+            canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
-        let context = _canvas
+        let context = canvas
             .get_context("webgl")?
             .unwrap()
             .dyn_into::<WebGlRenderingContext>()?;
+
+        context.viewport(0, 0, canvas.width() as _, canvas.height() as _);
 
         let memory = wasm_bindgen::memory()
             .dyn_into::<WebAssembly::Memory>()?
@@ -50,7 +52,7 @@ impl WebGlContext {
 
         Ok(WebGlContext {
             context,
-            _canvas,
+            _canvas: canvas,
             program: Program::empty(),
             attributes: HashMap::new(),
             uniforms: HashMap::new(),
@@ -162,8 +164,8 @@ impl WebGlContext {
     }
 
     /// Clear and set background color
-    pub fn clear_with_color(&self, color: [f32; 4]) {
-        self.context.clear_color(color[0], color[1], color[2], color[3]);
+    pub fn clear_with_color(&self, color: [f64; 4]) {
+        self.context.clear_color(color[0] as _, color[1] as _, color[2] as _, color[3] as _);
         self.context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
     }
 
@@ -235,6 +237,71 @@ impl WebGlContext {
                     }
                     UniformInner::Uniform4f(val1, val2, val3, val4, _) => {
                         self.context.uniform4f(Some(location), *val1 as _, *val2 as _, *val3 as _, *val4 as _)
+                    }
+                }
+
+                Ok(())
+            }
+            None => Err(String::from("Uniform does not exist!")),
+        }
+    }
+
+    pub fn update_uniform<'a, T: Into<Cow<'a, str>>>(&self, name: T, tick: f64) -> Result<(), String> {
+        let uniform = self.uniforms.get(&name.into().into_owned());
+        match uniform {
+            Some(uniform) => {
+                let (data, location) = uniform.get_data().get_uniform();
+
+                if data.is_dynamic() {
+                    match data {
+                        UniformInner::Uniform1i(_, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform1i(Some(location), val)   
+                            }
+                        },
+                        UniformInner::Uniform1f(_, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform1f(Some(location), val as _)   
+                            }
+                        },
+                        UniformInner::Uniform2i(_, _, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform2i(Some(location), val[0], val[1])
+                            }
+                        }
+                        UniformInner::Uniform2f(_, _, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform2f(Some(location), val[0] as _, val[1] as _)
+                            }
+                        }
+                        UniformInner::Uniform3i(_, _, _, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform3i(Some(location), val[0], val[1], val[2])
+                            }
+                        }
+                        UniformInner::Uniform3f(_, _, _, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform3f(Some(location), val[0] as _, val[1] as _, val[2] as _)
+                            }
+                        }
+                        UniformInner::Uniform4i(_, _, _, _, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform4i(Some(location), val[0], val[1], val[2], val[3])
+                            }
+                        }
+                        UniformInner::Uniform4f(_, _, _, _, func) => {
+                            if let Some(func) = func {
+                                let val = func(tick);
+                                self.context.uniform4f(Some(location), val[0] as _, val[1] as _, val[2] as _, val[3] as _)
+                            }
+                        }
                     }
                 }
 
