@@ -211,17 +211,17 @@ macro_rules! parse_ident {
     };
     (@uniform_inner $expr:expr, $id:ident: [$($tokens:expr),*], $($extra:tt)* ) => {
         parse_ident!(@uniform_inner $expr, $id: [$($tokens),*]);
-        parse_ident!(@uniform_inner $($extra)* );
+        parse_ident!(@uniform_inner $expr, $($extra)* );
     };
     // Uniform Function
-    // (@uniform_inner $id:ident: |$($fn_head:ident),*| $fn_body:expr ) => {
-    //     Uniform::from((stringify!($id).to_owned(), UniformInner::from(Rc::new($fn_head $fn_body) as Rc<Fn(f64)->_>))),
-    // };
-    // (@uniform_inner $id:ident: |$($fn_head:ident),*| $fn_body:expr, $($extra:tt)* ) => {
-    //     parse_ident!(@uniform_inner $id: |$($fn_head),*| $fn_body ),
-    //     parse_ident!(@uniform_inner $($extra)* ),
-    // };
+    (@uniform_inner $expr:expr, $id:ident: |$($fn_head:ident),*| $fn_body:expr ) => {
+        $expr.push(Uniform::from((stringify!($id).to_owned(), UniformInner::from(Rc::new(|$($fn_head),*| $fn_body) as Rc<Fn(f64)->_>))));
+    };
+    (@uniform_inner $expr:expr, $id:ident: |$($fn_head:ident),*| $fn_body:expr, $($extra:tt)* ) => {
+        parse_ident!(@uniform_inner $expr, $id: |$($fn_head),*| $fn_body );
+        parse_ident!(@uniform_inner $expr, $($extra)* );
+    };
     // Empty base for trailing commas
-    (@uniform_inner ) => {
+    (@uniform_inner $expr:expr,) => {
     };
 }
