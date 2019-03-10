@@ -44,7 +44,10 @@ impl WebGlContext {
             .unwrap()
             .dyn_into::<WebGlRenderingContext>()?;
 
-        context.viewport(0, 0, canvas.width() as _, canvas.height() as _);
+        let window = web_sys::window().unwrap();
+        canvas.set_width(window.inner_width().unwrap().as_f64().unwrap() as _);
+        canvas.set_height(window.inner_height().unwrap().as_f64().unwrap() as _);
+        context.viewport(0, 0, window.inner_width().unwrap().as_f64().unwrap() as _, window.inner_height().unwrap().as_f64().unwrap() as _);
 
         let memory = wasm_bindgen::memory()
             .dyn_into::<WebAssembly::Memory>()?

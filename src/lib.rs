@@ -62,5 +62,9 @@ pub mod prelude {
     pub use rugl_main as rugl;
     pub use std::rc::Rc;
     pub use std::cell::RefCell;
+    pub use js_sys::*;
+    pub use web_sys;
+    pub use wasm_bindgen;
     pub use wasm_bindgen::prelude::*;
+    pub use wasm_bindgen::JsCast;
 }

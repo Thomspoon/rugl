@@ -60,7 +60,7 @@ impl Rugl<'_> {
 
         self.context.draw_triangles(*self.inner.get_count());
 
-        self.inner.tick += 0.001;
+        self.inner.tick += 1.0;
 
         Ok(())
     }
