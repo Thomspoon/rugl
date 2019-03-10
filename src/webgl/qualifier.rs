@@ -55,32 +55,32 @@ impl From<f32> for Qualifier {
     }
 }
 
-impl From<(i32, i32)> for Qualifier {
-    fn from(item: (i32, i32)) -> Self {
-        Qualifier::Vec2(item.0, item.1)
+impl From<[i32; 2]> for Qualifier {
+    fn from(item: [i32; 2]) -> Self {
+        Qualifier::Vec2(item[0], item[1])
     }
 }
 
-impl From<(i32, i32, i32)> for Qualifier {
-    fn from(item: (i32, i32, i32)) -> Self {
-        Qualifier::Vec3(item.0, item.1, item.2)
+impl From<[i32; 3]> for Qualifier {
+    fn from(item: [i32; 3]) -> Self {
+        Qualifier::Vec3(item[0], item[1], item[2])
     }
 }
 
-impl From<(f32, f32)> for Qualifier {
-    fn from(item: (f32, f32)) -> Self {
-        Qualifier::Vec2f(item.0, item.1)
+impl From<[f32; 2]> for Qualifier {
+    fn from(item: [f32; 2]) -> Self {
+        Qualifier::Vec2f(item[0], item[1])
     }
 }
 
-impl From<(f32, f32, f32)> for Qualifier {
-    fn from(item: (f32, f32, f32)) -> Self {
-        Qualifier::Vec3f(item.0, item.1, item.2)
+impl From<[f32; 3]> for Qualifier {
+    fn from(item: [f32; 3]) -> Self {
+        Qualifier::Vec3f(item[0], item[1], item[2])
     }
 }
 
-impl From<(f32, f32, f32, f32)> for Qualifier {
-    fn from(item: (f32, f32, f32, f32)) -> Self {
-        Qualifier::Vec4f(item.0, item.1, item.2, item.3)
+impl From<[f32; 4]> for Qualifier {
+    fn from(item: [f32; 4]) -> Self {
+        Qualifier::Vec4f(item[0], item[1], item[2], item[3])
     }
 }

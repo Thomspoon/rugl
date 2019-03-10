@@ -23,8 +23,8 @@ impl Attribute {
 // Array impls
 __impl_from_repeat_vec!(i32, Attribute, Qualifier::Float);
 __impl_from_repeat_vec!(f32, Attribute, Qualifier::Float);
-__impl_from_repeat_vec!((i32, i32), Attribute, Qualifier::Vec2);
-__impl_from_repeat_vec!((i32, i32, i32), Attribute, Qualifier::Vec3);
-__impl_from_repeat_vec!((f32, f32), Attribute, Qualifier::Vec2f);
-__impl_from_repeat_vec!((f32, f32, f32), Attribute, Qualifier::Vec3f);
-__impl_from_repeat_vec!((f32, f32, f32, f32), Attribute, Qualifier::Vec4f);
+__impl_from_repeat_vec!([i32; 2], Attribute, Qualifier::Vec2);
+__impl_from_repeat_vec!([i32; 3], Attribute, Qualifier::Vec3);
+__impl_from_repeat_vec!([f32; 2], Attribute, Qualifier::Vec2f);
+__impl_from_repeat_vec!([f32; 3], Attribute, Qualifier::Vec3f);
+__impl_from_repeat_vec!([f32; 4], Attribute, Qualifier::Vec4f);

@@ -21,7 +21,6 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{WebGlBuffer, WebGlRenderingContext};
 
-#[derive(Debug)]
 pub struct WebGlContext {
     context: WebGlRenderingContext,
     _canvas: web_sys::HtmlCanvasElement,
@@ -164,8 +163,7 @@ impl WebGlContext {
 
     /// Clear and set background color
     pub fn clear_with_color(&self, color: [f32; 4]) {
-        self.context
-            .clear_color(color[0], color[1], color[2], color[3]);
+        self.context.clear_color(color[0], color[1], color[2], color[3]);
         self.context.clear(WebGlRenderingContext::COLOR_BUFFER_BIT);
     }
 
@@ -218,27 +216,25 @@ impl WebGlContext {
                 let (data, location) = uniform.get_data().get_uniform();
 
                 match data {
-                    UniformInner::Uniform1i(val) => self.context.uniform1i(Some(location), *val),
-                    UniformInner::Uniform1f(val) => self.context.uniform1f(Some(location), *val),
-                    UniformInner::Uniform2i(val1, val2) => {
+                    UniformInner::Uniform1i(val, _) => self.context.uniform1i(Some(location), *val),
+                    UniformInner::Uniform1f(val, _) => self.context.uniform1f(Some(location), *val as _),
+                    UniformInner::Uniform2i(val1, val2, _) => {
                         self.context.uniform2i(Some(location), *val1, *val2)
                     }
-                    UniformInner::Uniform2f(val1, val2) => {
-                        self.context.uniform2f(Some(location), *val1, *val2)
+                    UniformInner::Uniform2f(val1, val2, _) => {
+                        self.context.uniform2f(Some(location), *val1 as _, *val2 as _)
                     }
-                    UniformInner::Uniform3i(val1, val2, val3) => {
+                    UniformInner::Uniform3i(val1, val2, val3, _) => {
                         self.context.uniform3i(Some(location), *val1, *val2, *val3)
                     }
-                    UniformInner::Uniform3f(val1, val2, val3) => {
-                        self.context.uniform3f(Some(location), *val1, *val2, *val3)
+                    UniformInner::Uniform3f(val1, val2, val3, _) => {
+                        self.context.uniform3f(Some(location), *val1 as _, *val2 as _, *val3 as _)
                     }
-                    UniformInner::Uniform4i(val1, val2, val3, val4) => {
-                        self.context
-                            .uniform4i(Some(location), *val1, *val2, *val3, *val4)
+                    UniformInner::Uniform4i(val1, val2, val3, val4, _) => {
+                        self.context.uniform4i(Some(location), *val1, *val2, *val3, *val4)
                     }
-                    UniformInner::Uniform4f(val1, val2, val3, val4) => {
-                        self.context
-                            .uniform4f(Some(location), *val1, *val2, *val3, *val4)
+                    UniformInner::Uniform4f(val1, val2, val3, val4, _) => {
+                        self.context.uniform4f(Some(location), *val1 as _, *val2 as _, *val3 as _, *val4 as _)
                     }
                 }
 
@@ -250,8 +246,7 @@ impl WebGlContext {
 
     /// Draw triangles
     pub fn draw_triangles(&self, count: i32) {
-        self.context
-            .draw_arrays(WebGlRenderingContext::TRIANGLES, 0, count);
+        self.context.draw_arrays(WebGlRenderingContext::TRIANGLES, 0, count);
     }
 
     pub fn context(&self) -> &WebGlRenderingContext {

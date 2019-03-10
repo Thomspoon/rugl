@@ -40,7 +40,6 @@ use std::borrow::Cow;
 
 use crate::webgl::{Attribute, Uniform, WebGlContext};
 
-#[derive(Debug)]
 pub struct Rugl<'a> {
     pub inner: RuglInner<'a>,
     pub context: WebGlContext,
@@ -63,7 +62,6 @@ impl Rugl<'_> {
 /// The internal Rugl struct holds the vertex and fragment shaders,
 /// and internal vectors to any attributes and uniforms used in
 /// a design.
-#[derive(Debug)]
 pub struct RuglInner<'a> {
     pub vertex: Cow<'a, str>,
     pub fragment: Cow<'a, str>,
@@ -151,7 +149,7 @@ macro_rules! rugl_inner {
             }
 
             for uniform in inner.get_mut_uniforms() {
-                context.create_uniform(uniform.get_name(), uniform.inner())?;
+                context.create_uniform(uniform.get_name(), uniform.get_data())?;
                 context.bind_uniform(uniform.get_name())?;
             }
 
@@ -197,26 +195,33 @@ macro_rules! parse_ident {
     (@attribute
         $($id:ident: [$($tokens:tt)*]),+ $(,)*
     ) => {
-        vec![$( Attribute::from((stringify!($id).to_owned(), determine_bracket_replace!($($tokens)*)) )),*]
+        vec![$( Attribute::from((stringify!($id).to_owned(), [$($tokens)*])) ),*]
     };
-    // Parse each uniform to generate ident and data array
+    // Parse uniform to generate variable-use function
     (@uniform
-        $($id:ident: [$($tokens:tt)*]),+ $(,)*
-    ) => {
-        vec![$( Uniform::from((stringify!($id).to_owned(), UniformInner::from(determine_bracket_replace!($($tokens)*))) )),*]
+        $($tokens:tt)*
+    ) => {{
+        let mut uniforms: Vec<Uniform> = Vec::new();
+        parse_ident!(@uniform_inner uniforms, $($tokens)*);
+        uniforms
+    }};
+    // Uniform Array
+    (@uniform_inner $expr:expr, $id:ident: [$($tokens:expr),*] ) => {
+        $expr.push(Uniform::from((stringify!($id).to_owned(), UniformInner::from([$($tokens),*]))));
     };
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! determine_bracket_replace {
-    // Replace brackets with parenthesis and return as an array
-    ($([$($tokens:tt)*]),*) => {
-        [ $( ($($tokens)*) ),* ]
+    (@uniform_inner $expr:expr, $id:ident: [$($tokens:expr),*], $($extra:tt)* ) => {
+        parse_ident!(@uniform_inner $expr, $id: [$($tokens),*]);
+        parse_ident!(@uniform_inner $($extra)* );
     };
-
-    // Not actually replacing brackets, just passing to an array
-    ($($tokens:tt)*) => {
-        [ $($tokens)* ]
-    }
+    // Uniform Function
+    // (@uniform_inner $id:ident: |$($fn_head:ident),*| $fn_body:expr ) => {
+    //     Uniform::from((stringify!($id).to_owned(), UniformInner::from(Rc::new($fn_head $fn_body) as Rc<Fn(f64)->_>))),
+    // };
+    // (@uniform_inner $id:ident: |$($fn_head:ident),*| $fn_body:expr, $($extra:tt)* ) => {
+    //     parse_ident!(@uniform_inner $id: |$($fn_head),*| $fn_body ),
+    //     parse_ident!(@uniform_inner $($extra)* ),
+    // };
+    // Empty base for trailing commas
+    (@uniform_inner ) => {
+    };
 }

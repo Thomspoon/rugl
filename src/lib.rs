@@ -16,16 +16,15 @@ macro_rules! rugl_main {
 
             Ok(())
         }
-
     }
 }
 
 #[macro_use]
 pub mod prelude {
     pub use super::*;
-
+    pub use std::rc::Rc;
     pub use crate::rugl::{Rugl, RuglInner};
     pub use crate::webgl::*;
-    pub use wasm_bindgen::prelude::*;
     pub use rugl_main as rugl;
+    pub use wasm_bindgen::prelude::*;
 }

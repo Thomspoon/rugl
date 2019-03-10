@@ -4,7 +4,6 @@ use web_sys::{WebGlBuffer, WebGlUniformLocation};
 use crate::webgl::JsArray;
 use crate::webgl::UniformInner;
 
-#[derive(Debug)]
 pub enum BufferInternal {
     Attribute(JsArray, u32),
     Uniform(UniformInner, WebGlUniformLocation),
@@ -26,7 +25,6 @@ impl BufferInternal {
     }
 }
 
-#[derive(Debug)]
 pub struct Buffer {
     buffer: Option<WebGlBuffer>,
     data: BufferInternal,
